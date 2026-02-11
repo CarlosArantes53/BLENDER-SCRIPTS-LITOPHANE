@@ -38,6 +38,11 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
             row.prop(props, "smooth_factor")
             row.prop(props, "smooth_iters")
 
+        box = layout.box()
+        box.label(text="4. Finalização", icon='CHECKBOX_HLT')
+        box.prop(props, "flat_back")
+        box.prop(props, "apply_modifiers")
+
         layout.separator()
         row = layout.row()
         row.scale_y = 1.5

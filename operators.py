@@ -46,14 +46,8 @@ class MESH_OT_generate_lithophane(bpy.types.Operator):
         # 3. Aplicar Formato (Curva/Cilindro)
         geometry.apply_shaping(obj, props)
         
-        # 4. Finalizar (Solidify e Smooth)
-        geometry.finalize_geometry(
-            obj, 
-            props.min_thickness, 
-            props.use_smooth, 
-            props.smooth_factor, 
-            props.smooth_iters
-        )
+        # 4. Finalizar (Espessura, Fundo Plano e Modificadores)
+        geometry.finalize_geometry(obj, props)
 
         self.report({'INFO'}, f"Lithophane {props.model_type} criado!")
         return {'FINISHED'}

@@ -73,6 +73,18 @@ class LithophaneProperties(bpy.types.PropertyGroup):
         min=1, max=50
     )
 
+    flat_back: bpy.props.BoolProperty(
+        name="Gerar Fundo Plano",
+        description="Para Planos: Extruda uma base reta (Modo Destrutivo). Para Outros: Aplica espessura sólida.",
+        default=False
+    )
+
+    apply_modifiers: bpy.props.BoolProperty(
+        name="Aplicar Modificadores",
+        description="Converte o objeto final em uma malha estática (aplica todos os modificadores)",
+        default=False
+    )
+
 def register():
     bpy.utils.register_class(LithophaneProperties)
     bpy.types.Scene.lithophane_props = bpy.props.PointerProperty(type=LithophaneProperties)

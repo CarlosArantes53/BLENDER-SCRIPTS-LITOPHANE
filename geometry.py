@@ -77,16 +77,38 @@ def apply_shaping(obj, props):
         bend2.deform_axis = 'Z'
         bend2.angle = math.radians(90)
 
-def finalize_geometry(obj, min_thickness, use_smooth, smooth_fac, smooth_iter):
-    if use_smooth:
+def finalize_geometry(obj, props):
+    if props.use_smooth:
         smooth = obj.modifiers.new(name="Litho_Smooth", type='SMOOTH')
-        smooth.factor = smooth_fac
-        smooth.iterations = smooth_iter
+        smooth.factor = props.smooth_factor
+        smooth.iterations = props.smooth_iters
 
-    sol = obj.modifiers.new(name="Litho_Solidify", type='SOLIDIFY')
-    sol.thickness = min_thickness
-    sol.offset = 1.0
-    sol.use_even_offset = True
-    sol.use_quality_normals = True
+    if props.model_type == 'FLAT' and props.flat_back:
+        bpy.ops.object.convert(target='MESH')
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        
+        bpy.ops.mesh.extrude_region_move(
+            TRANSFORM_OT_translate={"value": (0, 0, -props.min_thickness)}
+        )
+        
+        bpy.ops.transform.resize(value=(1, 1, 0), orient_type='GLOBAL')
+        
+        bpy.ops.mesh.normals_make_consistent(inside=False)
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+    else:
+        sol = obj.modifiers.new(name="Litho_Solidify", type='SOLIDIFY')
+        sol.thickness = props.min_thickness
+        sol.offset = 1.0
+        sol.use_even_offset = True
+        sol.use_quality_normals = True
     
     bpy.ops.object.shade_smooth()
+
+    if props.apply_modifiers:
+        try:
+            bpy.ops.object.convert(target='MESH')
+        except Exception as e:
+            print(f"Aviso ao aplicar modificadores: {e}")
