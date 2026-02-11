@@ -47,6 +47,9 @@ def apply_shaping(obj, props):
         
         if m_type == 'CYLINDER':
             bend.angle = math.radians(360)
+            weld = obj.modifiers.new(name="Shape_Weld", type='WELD')
+            weld.merge_threshold = 0.01
+            
         elif m_type == 'CURVE_OUTER':
             bend.angle = math.radians(props.curve_angle)
         elif m_type == 'CURVE_INNER':
@@ -56,7 +59,6 @@ def apply_shaping(obj, props):
         cast = obj.modifiers.new(name="Shape_Dome", type='CAST')
         cast.factor = 1.0
         cast.radius = props.target_width / 2
-        cast.keep_radius = True
         obj.modifiers.remove(cast)
         
         bend1 = obj.modifiers.new(name="Dome_X", type='SIMPLE_DEFORM')
