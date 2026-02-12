@@ -66,7 +66,11 @@ def apply_shaping(obj, props):
         bend.deform_axis = 'Z'
         
         if m_type == 'CYLINDER':
-            bend.angle = math.radians(360)
+            if props.flat_back:
+                 bend.angle = math.radians(-360)
+            else:
+                 bend.angle = math.radians(360)
+
             weld = obj.modifiers.new(name="Shape_Weld", type='WELD')
             weld.merge_threshold = 0.01
             
