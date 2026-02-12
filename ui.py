@@ -29,6 +29,7 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
         row = box.row()
         row.prop(props, "min_thickness")
         row.prop(props, "max_thickness_add")
+        box.prop(props, "invert_relief", toggle=True)
         
         box.prop(props, "resolution")
         box.prop(props, "use_smooth")

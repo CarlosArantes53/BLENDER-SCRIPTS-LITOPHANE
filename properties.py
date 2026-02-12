@@ -48,6 +48,12 @@ class LithophaneProperties(bpy.types.PropertyGroup):
         min=0.1
     )
     
+    invert_relief: bpy.props.BoolProperty(
+        name="Inverter Relevo (Negativo)",
+        description="Se marcado, partes escuras ficam profundas (efeito madeira). Padrão é desmarcado (Lithophane luz).",
+        default=False
+    )
+    
     resolution: bpy.props.IntProperty(
         name="Nível de Resolução",
         description="Subdivisão da malha",
@@ -81,7 +87,7 @@ class LithophaneProperties(bpy.types.PropertyGroup):
 
     apply_modifiers: bpy.props.BoolProperty(
         name="Aplicar Modificadores",
-        description="Converte o objeto final em uma malha estática (aplica todos os modificadores)",
+        description="Converte o objeto final em uma malha estática (aplica todos os modificadores) e limpa auxiliares.",
         default=False
     )
 

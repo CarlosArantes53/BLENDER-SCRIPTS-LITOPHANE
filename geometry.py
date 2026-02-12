@@ -15,7 +15,7 @@ def setup_base_mesh(width, height, resolution, name="Lithophane"):
     
     return obj
 
-def apply_displacement(obj, image, strength):
+def apply_displacement(obj, image, strength, invert=False):
     tex = bpy.data.textures.new(f"{obj.name}_Tex", type='IMAGE')
     tex.image = image
     if image.colorspace_settings.name != 'sRGB':
@@ -25,19 +25,24 @@ def apply_displacement(obj, image, strength):
     disp = obj.modifiers.new(name="Litho_Displace", type='DISPLACE')
     disp.texture = tex
     disp.mid_level = 0.0
-    disp.strength = -strength
+    disp.strength = strength if invert else -strength
+    
     disp.texture_coords = 'UV'
 
 def apply_shaping(obj, props):    
+    pivots_created = []
+
     empty = bpy.data.objects.new("Litho_Pivot", None)
     bpy.context.collection.objects.link(empty)
     empty.location = obj.location
     empty.rotation_euler[0] = math.radians(90)
+    
+    pivots_created.append(empty)
 
     m_type = props.model_type
 
     if m_type == 'FLAT':
-        return
+       pass
         
     elif m_type in {'CURVE_OUTER', 'CURVE_INNER', 'CYLINDER'}:
         bend = obj.modifiers.new(name="Shape_Bend", type='SIMPLE_DEFORM')
@@ -70,6 +75,7 @@ def apply_shaping(obj, props):
         empty2 = bpy.data.objects.new("Litho_Pivot_Y", None)
         bpy.context.collection.objects.link(empty2)
         empty2.rotation_euler[2] = math.radians(90)
+        pivots_created.append(empty2)
         
         bend2 = obj.modifiers.new(name="Dome_Y", type='SIMPLE_DEFORM')
         bend2.deform_method = 'BEND'
@@ -77,7 +83,9 @@ def apply_shaping(obj, props):
         bend2.deform_axis = 'Z'
         bend2.angle = math.radians(90)
 
-def finalize_geometry(obj, props):
+    return pivots_created
+
+def finalize_geometry(obj, props, created_pivots=[]):
     if props.use_smooth:
         smooth = obj.modifiers.new(name="Litho_Smooth", type='SMOOTH')
         smooth.factor = props.smooth_factor
@@ -97,6 +105,11 @@ def finalize_geometry(obj, props):
         
         bpy.ops.mesh.normals_make_consistent(inside=False)
         bpy.ops.object.mode_set(mode='OBJECT')
+        
+        if created_pivots:
+            for p in created_pivots:
+                try: bpy.data.objects.remove(p, do_unlink=True)
+                except: pass
 
     else:
         sol = obj.modifiers.new(name="Litho_Solidify", type='SOLIDIFY')
@@ -110,5 +123,9 @@ def finalize_geometry(obj, props):
     if props.apply_modifiers:
         try:
             bpy.ops.object.convert(target='MESH')
+            if created_pivots:
+                for p in created_pivots:
+                    try: bpy.data.objects.remove(p, do_unlink=True)
+                    except: pass
         except Exception as e:
             print(f"Aviso ao aplicar modificadores: {e}")
