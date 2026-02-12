@@ -37,16 +37,14 @@ class MESH_OT_generate_lithophane(bpy.types.Operator):
             base_width = props.target_width
             base_height = props.target_width * aspect
 
-        # 1. Gerar Malha Base
         obj = geometry.setup_base_mesh(base_width, base_height, props.resolution)
         
-        # 2. Aplicar Deslocamento (Imagem)
         geometry.apply_displacement(obj, img, props.max_thickness_add, invert=props.invert_relief)
         
-        # 3. Aplicar Formato (Curva/Cilindro)
+        if props.flat_back:
+            geometry.bake_flat_back_geometry(obj, props.min_thickness)
         created_pivots = geometry.apply_shaping(obj, props)
         
-        # 4. Finalizar (Espessura, Fundo Plano e Modificadores)
         geometry.finalize_geometry(obj, props, created_pivots)
 
         self.report({'INFO'}, f"Lithophane {props.model_type} criado!")

@@ -80,8 +80,8 @@ class LithophaneProperties(bpy.types.PropertyGroup):
     )
 
     flat_back: bpy.props.BoolProperty(
-        name="Gerar Fundo Plano",
-        description="Para Planos: Extruda uma base reta (Modo Destrutivo). Para Outros: Aplica espessura sólida.",
+        name="Gerar Fundo Plano/Liso",
+        description="Cria uma superfície posterior lisa. Em Cilindros/Curvas, o interior será um círculo perfeito (sem ondulações).",
         default=False
     )
 

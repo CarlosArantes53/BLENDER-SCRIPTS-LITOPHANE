@@ -26,8 +26,23 @@ def apply_displacement(obj, image, strength, invert=False):
     disp.texture = tex
     disp.mid_level = 0.0
     disp.strength = strength if invert else -strength
-    
     disp.texture_coords = 'UV'
+
+def bake_flat_back_geometry(obj, thickness):
+    try:
+        bpy.ops.object.convert(target='MESH')
+    except Exception as e:
+        print(f"Erro ao converter malha: {e}")
+        return
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.extrude_region_move(
+        TRANSFORM_OT_translate={"value": (0, 0, -thickness)}
+    )
+    bpy.ops.transform.resize(value=(1, 1, 0), orient_type='GLOBAL')
+    bpy.ops.mesh.normals_make_consistent(inside=False)
+    bpy.ops.object.mode_set(mode='OBJECT')
 
 def apply_shaping(obj, props):    
     pivots_created = []
@@ -42,7 +57,7 @@ def apply_shaping(obj, props):
     m_type = props.model_type
 
     if m_type == 'FLAT':
-       pass
+        pass
         
     elif m_type in {'CURVE_OUTER', 'CURVE_INNER', 'CYLINDER'}:
         bend = obj.modifiers.new(name="Shape_Bend", type='SIMPLE_DEFORM')
@@ -91,27 +106,7 @@ def finalize_geometry(obj, props, created_pivots=[]):
         smooth.factor = props.smooth_factor
         smooth.iterations = props.smooth_iters
 
-    if props.model_type == 'FLAT' and props.flat_back:
-        bpy.ops.object.convert(target='MESH')
-        
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        
-        bpy.ops.mesh.extrude_region_move(
-            TRANSFORM_OT_translate={"value": (0, 0, -props.min_thickness)}
-        )
-        
-        bpy.ops.transform.resize(value=(1, 1, 0), orient_type='GLOBAL')
-        
-        bpy.ops.mesh.normals_make_consistent(inside=False)
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        if created_pivots:
-            for p in created_pivots:
-                try: bpy.data.objects.remove(p, do_unlink=True)
-                except: pass
-
-    else:
+    if not props.flat_back:
         sol = obj.modifiers.new(name="Litho_Solidify", type='SOLIDIFY')
         sol.thickness = props.min_thickness
         sol.offset = 1.0
