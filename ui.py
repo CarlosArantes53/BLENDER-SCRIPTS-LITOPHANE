@@ -16,7 +16,18 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
         box.prop(props, "image_path", text="")
 
         box = layout.box()
-        box.label(text="2. Geometria", icon='MESH_DATA')
+        box.label(text="2. Pré-Processamento", icon='NODE_COMPOSITING')
+        box.prop(props, "use_image_processing", toggle=True)
+        
+        if props.use_image_processing:
+            box.prop(props, "img_luminance_mode")
+            box.prop(props, "img_contrast_normalize")
+            row = box.row()
+            row.prop(props, "img_sharpen")
+            row.prop(props, "img_cavity_strength")
+
+        box = layout.box()
+        box.label(text="3. Geometria", icon='MESH_DATA')
         box.prop(props, "model_type")
         
         if props.model_type in {'CURVE_OUTER', 'CURVE_INNER'}:
@@ -25,7 +36,7 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
         box.prop(props, "target_width")
 
         box = layout.box()
-        box.label(text="3. Detalhes", icon='MOD_SOLIDIFY')
+        box.label(text="4. Detalhes do Relevo", icon='MOD_SOLIDIFY')
         row = box.row()
         row.prop(props, "min_thickness")
         row.prop(props, "max_thickness_add")
@@ -40,7 +51,7 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
             row.prop(props, "smooth_iters")
 
         box = layout.box()
-        box.label(text="4. Finalização", icon='CHECKBOX_HLT')
+        box.label(text="5. Finalização", icon='CHECKBOX_HLT')
         box.prop(props, "flat_back")
         box.prop(props, "apply_modifiers")
 

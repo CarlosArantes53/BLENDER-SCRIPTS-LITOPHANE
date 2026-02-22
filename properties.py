@@ -8,6 +8,40 @@ class LithophaneProperties(bpy.types.PropertyGroup):
         subtype='FILE_PATH'
     )
     
+    use_image_processing: bpy.props.BoolProperty(
+        name="Ativar Pré-Processamento (Recomendado)",
+        description="Aplica cálculos de matriz para melhorar o contraste e nitidez antes do 3D",
+        default=True
+    )
+    
+    img_luminance_mode: bpy.props.EnumProperty(
+        name="Conversão de Cores",
+        description="Técnica 3: Como transformar as cores em tons de cinza",
+        items=[
+            ('PERCEPTUAL', "Perceptual (Rec.709)", "Ajusta verde/azul como o olho humano vê"),
+            ('SIMPLE', "Média Simples", "(R+G+B)/3"),
+        ],
+        default='PERCEPTUAL'
+    )
+    
+    img_contrast_normalize: bpy.props.BoolProperty(
+        name="Maximizar Contraste (Levels)",
+        description="Técnica 2: Força os tons mais escuros a ficarem 100% pretos e os claros 100% brancos",
+        default=True
+    )
+    
+    img_sharpen: bpy.props.FloatProperty(
+        name="Nitidez (Sharpen)",
+        description="Técnica 1: Realça bordas aplicando matriz de convolução (Laplaciano)",
+        default=0.5, min=0.0, max=3.0
+    )
+    
+    img_cavity_strength: bpy.props.FloatProperty(
+        name="Cavidade (Escurecer Bordas)",
+        description="Técnica 4: Aprofunda fendas e contornos simulando Ambient Occlusion no relevo",
+        default=0.2, min=0.0, max=2.0
+    )
+
     model_type: bpy.props.EnumProperty(
         name="Formato",
         description="Escolha a geometria base do Lithophane",
@@ -81,7 +115,7 @@ class LithophaneProperties(bpy.types.PropertyGroup):
 
     flat_back: bpy.props.BoolProperty(
         name="Gerar Fundo Plano/Liso",
-        description="Cria uma superfície posterior lisa. Em Cilindros/Curvas, o interior será um círculo perfeito (sem ondulações).",
+        description="Cria uma superfície posterior lisa. Em Cilindros/Curvas, o interior será um círculo perfeito.",
         default=False
     )
 
