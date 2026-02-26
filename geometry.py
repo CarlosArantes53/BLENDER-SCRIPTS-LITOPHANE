@@ -44,10 +44,10 @@ def bake_flat_back_geometry(obj, thickness):
     bpy.ops.mesh.normals_make_consistent(inside=False)
     bpy.ops.object.mode_set(mode='OBJECT')
 
-def apply_shaping(obj, props):    
+def apply_shaping(obj, props, is_back=False):    
     pivots_created = []
 
-    empty = bpy.data.objects.new("Litho_Pivot", None)
+    empty = bpy.data.objects.new(f"Litho_Pivot_{obj.name}", None)
     bpy.context.collection.objects.link(empty)
     empty.location = obj.location
     empty.rotation_euler[0] = math.radians(90)
@@ -59,21 +59,22 @@ def apply_shaping(obj, props):
     if m_type == 'FLAT':
         pass
         
-    elif m_type in {'CURVE_OUTER', 'CURVE_INNER', 'CYLINDER'}:
+    elif m_type in {'CURVE_OUTER', 'CURVE_INNER', 'CYLINDER', 'OVAL_2_FACES'}:
         bend = obj.modifiers.new(name="Shape_Bend", type='SIMPLE_DEFORM')
         bend.deform_method = 'BEND'
         bend.origin = empty
         bend.deform_axis = 'Z'
         
         if m_type == 'CYLINDER':
-            if props.flat_back:
-                 bend.angle = math.radians(-360)
-            else:
-                 bend.angle = math.radians(360)
-
+            bend.angle = math.radians(-360) if props.flat_back else math.radians(360)
             weld = obj.modifiers.new(name="Shape_Weld", type='WELD')
             weld.merge_threshold = 0.01
             
+        elif m_type == 'OVAL_2_FACES':
+            bend.angle = math.radians(-180) if props.flat_back else math.radians(180)
+            if is_back:
+                obj.rotation_euler[1] = math.radians(180) 
+                
         elif m_type == 'CURVE_OUTER':
             bend.angle = math.radians(props.curve_angle)
         elif m_type == 'CURVE_INNER':

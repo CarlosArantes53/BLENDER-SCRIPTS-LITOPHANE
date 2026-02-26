@@ -80,37 +80,88 @@ class MESH_OT_generate_lithophane(bpy.types.Operator):
         try:
             img = bpy.data.images.load(img_path)
         except:
-            self.report({'ERROR'}, "Erro ao carregar a imagem")
+            self.report({'ERROR'}, "Erro ao carregar a imagem principal")
             return {'CANCELLED'}
+
+        if props.model_type == 'OVAL_2_FACES':
+            if not props.image_path_2 or not os.path.exists(props.image_path_2):
+                self.report({'ERROR'}, "Selecione uma segunda imagem válida (Costas) para o modelo Oval")
+                return {'CANCELLED'}
+            try:
+                img2 = bpy.data.images.load(props.image_path_2)
+            except:
+                self.report({'ERROR'}, "Erro ao carregar a segunda imagem")
+                return {'CANCELLED'}
 
         if props.use_image_processing:
             try:
                 img = apply_image_processing(img, props)
+                if props.model_type == 'OVAL_2_FACES':
+                    img2 = apply_image_processing(img2, props)
             except Exception as e:
-                self.report({'WARNING'}, f"Falha no pré-processamento (usando original). Erro: {e}")
+                self.report({'WARNING'}, f"Falha no pré-processamento. Erro: {e}")
 
         width_px = img.size[0]
         height_px = img.size[1]
         aspect = height_px / width_px
         
+        import math
         if props.model_type == 'CYLINDER':
-            import math
             perimeter = math.pi * props.target_width
             base_width = perimeter
             base_height = perimeter * aspect 
+        elif props.model_type == 'OVAL_2_FACES':
+            perimeter = math.pi * props.target_width
+            base_width = perimeter / 2
+            base_height = base_width * aspect
         else:
             base_width = props.target_width
             base_height = props.target_width * aspect
 
-        obj = geometry.setup_base_mesh(base_width, base_height, props.resolution)
-        
+        obj = geometry.setup_base_mesh(base_width, base_height, props.resolution, name="Litho_Front")
         geometry.apply_displacement(obj, img, props.max_thickness_add, invert=props.invert_relief)
-        
         if props.flat_back:
             geometry.bake_flat_back_geometry(obj, props.min_thickness)
-        created_pivots = geometry.apply_shaping(obj, props)
+        created_pivots = geometry.apply_shaping(obj, props, is_back=False)
         
-        geometry.finalize_geometry(obj, props, created_pivots)
+        if props.model_type == 'OVAL_2_FACES':
+            obj2 = geometry.setup_base_mesh(base_width, base_height, props.resolution, name="Litho_Back")
+            geometry.apply_displacement(obj2, img2, props.max_thickness_add, invert=props.invert_relief)
+            if props.flat_back:
+                geometry.bake_flat_back_geometry(obj2, props.min_thickness)
+            created_pivots2 = geometry.apply_shaping(obj2, props, is_back=True)
+            
+            geometry.finalize_geometry(obj, props, created_pivots)
+            geometry.finalize_geometry(obj2, props, created_pivots2)
+            
+            obj.scale[2] = props.oval_squash
+            obj2.scale[2] = props.oval_squash
+            
+            if props.create_base_led:
+                bpy.ops.mesh.primitive_cylinder_add(
+                    vertices=64, 
+                    radius=props.target_width/2, 
+                    depth=10, 
+                    end_fill_type='NOTHING', 
+                    location=(0, -base_height/2 - 5, 0),
+                    rotation=(math.radians(90), 0, 0)
+                )
+                base_obj = bpy.context.active_object
+                base_obj.name = "Litho_Base_LED"
+                sol = base_obj.modifiers.new("Base_Solidify", type='SOLIDIFY')
+                sol.thickness = 2.0
+                sol.offset = 1.0
+                base_obj.scale[1] = props.oval_squash
+                
+            if props.apply_modifiers:
+                for o in [obj, obj2] + ([base_obj] if props.create_base_led else []):
+                    bpy.context.view_layer.objects.active = o
+                    if o.name == "Litho_Base_LED":
+                        bpy.ops.object.modifier_apply(modifier="Base_Solidify")
+                    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                    
+        else:
+            geometry.finalize_geometry(obj, props, created_pivots)
 
         self.report({'INFO'}, f"Lithophane {props.model_type} criado!")
         return {'FINISHED'}

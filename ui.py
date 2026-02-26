@@ -13,7 +13,10 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
 
         box = layout.box()
         box.label(text="1. Imagem Base", icon='IMAGE_DATA')
-        box.prop(props, "image_path", text="")
+        box.prop(props, "image_path", text="Imagem 1 (Frente)")
+        
+        if props.model_type == 'OVAL_2_FACES':
+            box.prop(props, "image_path_2", text="Imagem 2 (Costas)")
 
         box = layout.box()
         box.label(text="2. Pré-Processamento", icon='NODE_COMPOSITING')
@@ -35,6 +38,9 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
 
         box.prop(props, "target_width")
 
+        if props.model_type == 'OVAL_2_FACES':
+            box.prop(props, "oval_squash")
+
         box = layout.box()
         box.label(text="4. Detalhes do Relevo", icon='MOD_SOLIDIFY')
         row = box.row()
@@ -54,6 +60,9 @@ class VIEW3D_PT_lithophane_panel(bpy.types.Panel):
         box.label(text="5. Finalização", icon='CHECKBOX_HLT')
         box.prop(props, "flat_back")
         box.prop(props, "apply_modifiers")
+        
+        if props.model_type == 'OVAL_2_FACES':
+            box.prop(props, "create_base_led")
 
         layout.separator()
         row = layout.row()

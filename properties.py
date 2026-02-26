@@ -8,6 +8,13 @@ class LithophaneProperties(bpy.types.PropertyGroup):
         subtype='FILE_PATH'
     )
     
+    image_path_2: bpy.props.StringProperty(
+        name="Imagem 2 (Costas)",
+        description="Caminho da segunda imagem (necessário apenas para Oval de 2 Faces)",
+        default="",
+        subtype='FILE_PATH'
+    )
+
     use_image_processing: bpy.props.BoolProperty(
         name="Ativar Pré-Processamento (Recomendado)",
         description="Aplica cálculos de matriz para melhorar o contraste e nitidez antes do 3D",
@@ -41,6 +48,18 @@ class LithophaneProperties(bpy.types.PropertyGroup):
         description="Técnica 4: Aprofunda fendas e contornos simulando Ambient Occlusion no relevo",
         default=0.2, min=0.0, max=2.0
     )
+    
+    oval_squash: bpy.props.FloatProperty(
+        name="Achatamento do Oval (Espaço LED)",
+        description="Define o quão achatado o cilindro será (1.0 = Redondo, 0.4 = Lente fina)",
+        default=0.6, min=0.2, max=1.0
+    )
+
+    create_base_led: bpy.props.BoolProperty(
+        name="Criar Base de Apoio",
+        description="Gera um anel vazado na parte inferior para encaixar o LED e manter o lithophane em pé",
+        default=True
+    )
 
     model_type: bpy.props.EnumProperty(
         name="Formato",
@@ -51,6 +70,7 @@ class LithophaneProperties(bpy.types.PropertyGroup):
             ('CURVE_INNER', "Curva Interna", "Curvado para dentro (Côncavo)"),
             ('CYLINDER', "Cilindro Completo", "Tubo fechado 360 graus"),
             ('DOME', "Domo (Esférico)", "Projeção sobre topo de esfera"),
+            ('OVAL_2_FACES', "Oval (2 Faces)", "Formato ovalado com imagens na frente/trás e espaço para LED"),
         ],
         default='FLAT'
     )
